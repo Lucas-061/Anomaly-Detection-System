@@ -17,6 +17,17 @@ The system captures video streams in real time with OpenCV, detects human target
 
 Compared with traditional physical fences, which are fixed, less flexible, and difficult to manage intelligently, this system allows users to draw virtual safety zones in software. The monitored boundary can be adjusted for different scenarios, and the system can detect abnormal behaviors such as illegal intrusion, long-term lingering, fence crossing, falling, running/fighting, and climbing.
 
+
+## System Demo
+
+### Fall Detection
+
+![Fall detection demo](./docs/images/show_fall_down.jpg)
+
+### Intrusion and Fence-Crossing Detection
+
+![Intrusion and fence-crossing detection demo](./docs/images/show_intrusion.jpg)
+
 ## 2. Design Goals
 
 The system is designed to provide the following main functions:
