@@ -10,3 +10,7 @@ time,source,track_id,alarm_type,alarm_name,level,screenshot,video_clip
 2026-06-20 21:49:42,C:\Users\23304\Desktop\TrainVedio\fall-01.mp4,1,intrusion,违规闯入,二级预警,records\screenshots\intrusion\20260620_214942_id1_intrusion.jpg,records\videos\intrusion\20260620_214942_id1_intrusion.mp4
 2026-06-20 21:49:42,C:\Users\23304\Desktop\TrainVedio\fall-01.mp4,1,cross_fence,翻越围栏,三级预警,records\screenshots\cross_fence\20260620_214942_id1_cross_fence.jpg,records\videos\cross_fence\20260620_214942_id1_cross_fence.mp4
 2026-06-20 21:50:24,C:\Users\23304\Desktop\TrainVedio\fall-01.mp4,1,fall_down,摔倒,三级预警,records\screenshots\fall_down\20260620_215024_id1_fall_down.jpg,records\videos\fall_down\20260620_215024_id1_fall_down.mp4
+2026-06-20 22:06:02,C:\Users\23304\Desktop\TrainVedio\fall-01.mp4,1,intrusion,违规闯入,二级预警,records\screenshots\intrusion\20260620_220602_id1_intrusion.jpg,records\videos\intrusion\20260620_220602_id1_intrusion.mp4
+2026-06-20 22:06:02,C:\Users\23304\Desktop\TrainVedio\fall-01.mp4,1,cross_fence,翻越围栏,三级预警,records\screenshots\cross_fence\20260620_220602_id1_cross_fence.jpg,records\videos\cross_fence\20260620_220602_id1_cross_fence.mp4
+2026-06-20 22:06:03,C:\Users\23304\Desktop\TrainVedio\fall-01.mp4,1,fall_down,摔倒,三级预警,records\screenshots\fall_down\20260620_220603_id1_fall_down.jpg,records\videos\fall_down\20260620_220603_id1_fall_down.mp4
+2026-06-20 22:06:03,C:\Users\23304\Desktop\TrainVedio\fall-01.mp4,1,intrusion,违规闯入,二级预警,records\screenshots\intrusion\20260620_220603_id1_intrusion.jpg,
