@@ -1,4 +1,13 @@
-# 基于摄像头的异常行为识别系统
+<div align="center">
+
+# Anomaly-Detection-System
+
+**基于摄像头的室内异常行为识别系统**
+
+[![English](https://img.shields.io/badge/README-English-blue)](./README_en.md)
+[![简体中文](https://img.shields.io/badge/README-%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87-red)](./README.md)
+
+</div>
 
 ## 一、项目简介
 
@@ -465,3 +474,6 @@ behavior.py      # 异常动作规则判断
 alarm.py         # 报警截图和日志保存
 video_clip.py    # 报警前后视频片段保存
 ```
+
+
+
