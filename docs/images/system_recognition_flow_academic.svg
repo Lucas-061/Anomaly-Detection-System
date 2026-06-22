@@ -1,0 +1,136 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="980" viewBox="0 0 720 980">
+  <defs>
+    <style>
+      .box, .term, .diamond { fill: #fff; stroke: #111; stroke-width: 2; }
+      .term { rx: 26; ry: 26; }
+      .text { font-family: "SimSun", "Songti SC", "Noto Serif CJK SC", serif; font-size: 22px; fill: #111; text-anchor: middle; dominant-baseline: middle; }
+      .small { font-size: 20px; }
+      .caption-cn { font-family: "SimSun", "Songti SC", "Noto Serif CJK SC", serif; font-size: 24px; font-weight: 700; fill: #111; text-anchor: middle; }
+      .caption-en { font-family: "Times New Roman", serif; font-size: 23px; font-weight: 700; fill: #111; text-anchor: middle; }
+      .label { font-family: "SimSun", "Songti SC", "Noto Serif CJK SC", serif; font-size: 20px; fill: #111; text-anchor: middle; }
+      .arrow { stroke: #111; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L9,3 L0,6 Z" fill="#111" />
+    </marker>
+  </defs>
+
+  <rect x="1" y="1" width="718" height="978" fill="#fff"/>
+
+  <!-- Left column: operation and frame processing -->
+  <rect class="term" x="92" y="36" width="142" height="54"/>
+  <text class="text" x="163" y="64">开始</text>
+
+  <path class="arrow" d="M163 90 L163 126"/>
+  <rect class="box" x="78" y="126" width="170" height="70"/>
+  <text class="text" x="163" y="150">
+    <tspan x="163" dy="0">启动图形化</tspan>
+    <tspan x="163" dy="26">监控界面</tspan>
+  </text>
+
+  <path class="arrow" d="M163 196 L163 234"/>
+  <polygon class="diamond" points="163,234 255,294 163,354 71,294"/>
+  <text class="text small" x="163" y="282">
+    <tspan x="163" dy="0">选择识别</tspan>
+    <tspan x="163" dy="24">方式</tspan>
+  </text>
+
+  <path class="arrow" d="M163 354 L163 392"/>
+  <rect class="box" x="67" y="392" width="192" height="74"/>
+  <text class="text small" x="163" y="416">
+    <tspan x="163" dy="0">打开摄像头或</tspan>
+    <tspan x="163" dy="24">本地视频文件</tspan>
+  </text>
+
+  <path class="arrow" d="M163 466 L163 504"/>
+  <rect class="box" x="67" y="504" width="192" height="74"/>
+  <text class="text small" x="163" y="528">
+    <tspan x="163" dy="0">OpenCV 读取</tspan>
+    <tspan x="163" dy="24">当前视频帧</tspan>
+  </text>
+
+  <path class="arrow" d="M163 578 L163 616"/>
+  <polygon class="diamond" points="163,616 255,676 163,736 71,676"/>
+  <text class="text small" x="163" y="664">
+    <tspan x="163" dy="0">是否成功</tspan>
+    <tspan x="163" dy="24">读取帧</tspan>
+  </text>
+
+  <path class="arrow" d="M163 736 L163 772"/>
+  <text class="label" x="185" y="758">是</text>
+  <rect class="box" x="67" y="772" width="192" height="74"/>
+  <text class="text small" x="163" y="796">
+    <tspan x="163" dy="0">进入单帧</tspan>
+    <tspan x="163" dy="24">识别处理</tspan>
+  </text>
+
+  <path class="arrow" d="M71 676 L36 676 L36 161 L78 161"/>
+  <text class="label" x="52" y="663">否</text>
+
+  <path class="arrow" d="M255 676 L302 676 L302 872 L163 872 L163 846"/>
+  <text class="label" x="279" y="663">否</text>
+
+  <!-- Right column: recognition and alarm loop -->
+  <path class="arrow" d="M259 809 L340 809 L340 94 L405 94"/>
+  <rect class="box" x="405" y="58" width="190" height="72"/>
+  <text class="text small" x="500" y="82">
+    <tspan x="500" dy="0">YOLOv8 进行</tspan>
+    <tspan x="500" dy="24">人体目标检测</tspan>
+  </text>
+
+  <path class="arrow" d="M500 130 L500 168"/>
+  <rect class="box" x="405" y="168" width="190" height="72"/>
+  <text class="text small" x="500" y="192">
+    <tspan x="500" dy="0">目标跟踪并</tspan>
+    <tspan x="500" dy="24">分配人员 ID</tspan>
+  </text>
+
+  <path class="arrow" d="M500 240 L500 278"/>
+  <rect class="box" x="405" y="278" width="190" height="72"/>
+  <text class="text small" x="500" y="302">
+    <tspan x="500" dy="0">记录轨迹、速度</tspan>
+    <tspan x="500" dy="24">和历史位置</tspan>
+  </text>
+
+  <path class="arrow" d="M500 350 L500 388"/>
+  <polygon class="diamond" points="500,388 612,456 500,524 388,456"/>
+  <text class="text small" x="500" y="444">
+    <tspan x="500" dy="0">人体中心点</tspan>
+    <tspan x="500" dy="24">是否进入围栏</tspan>
+  </text>
+
+  <path class="arrow" d="M500 524 L500 562"/>
+  <text class="label" x="522" y="546">是</text>
+  <rect class="box" x="405" y="562" width="190" height="76"/>
+  <text class="text small" x="500" y="586">
+    <tspan x="500" dy="0">进行异常行为</tspan>
+    <tspan x="500" dy="24">规则分析</tspan>
+  </text>
+
+  <path class="arrow" d="M612 456 L654 456 L654 600 L595 600"/>
+  <text class="label" x="633" y="443">否</text>
+
+  <path class="arrow" d="M500 638 L500 676"/>
+  <polygon class="diamond" points="500,676 612,744 500,812 388,744"/>
+  <text class="text small" x="500" y="732">
+    <tspan x="500" dy="0">是否触发</tspan>
+    <tspan x="500" dy="24">异常报警</tspan>
+  </text>
+
+  <path class="arrow" d="M500 812 L500 850"/>
+  <text class="label" x="522" y="834">是</text>
+  <rect class="box" x="405" y="850" width="190" height="74"/>
+  <text class="text small" x="500" y="874">
+    <tspan x="500" dy="0">保存截图、视频</tspan>
+    <tspan x="500" dy="24">并写入日志</tspan>
+  </text>
+
+  <path class="arrow" d="M388 744 L340 744 L340 900 L405 900"/>
+  <text class="label" x="365" y="731">否</text>
+
+  <path class="arrow" d="M595 887 L670 887 L670 94 L595 94"/>
+  <text class="label" x="646" y="874">继续</text>
+
+  <text class="caption-cn" x="360" y="948">图 5　系统运行与异常识别流程</text>
+  <text class="caption-en" x="360" y="976">Fig. 5　Flow of system operation and anomaly recognition</text>
+</svg>
