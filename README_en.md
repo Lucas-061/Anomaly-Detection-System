@@ -31,7 +31,8 @@ The system provides a PyQt6 graphical interface and supports both camera input a
 
 ### Fall Detection
 
-![Fall detection demo](./docs/images/show_fall_down.jpg)
+![Fall detection demo01](./docs/images/show_fall_down_01.jpg)
+![Fall detection demo02](./docs/images/show_fall_down_02.jpg)
 
 ### Run Detection
 
