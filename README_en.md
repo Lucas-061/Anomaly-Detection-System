@@ -4,8 +4,8 @@
 
 **Camera-Based Indoor Abnormal Behavior Recognition System**
 
-[![English](https://img.shields.io/badge/README-English-blue)](./README_en.md)
 [![Simplified Chinese](https://img.shields.io/badge/README-Simplified%20Chinese-red)](./README.md)
+[![English](https://img.shields.io/badge/README-English-blue)](./README_en.md)
 
 </div>
 

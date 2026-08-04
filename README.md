@@ -4,8 +4,8 @@
 
 **基于摄像头的室内异常行为识别系统**
 
-[![English](https://img.shields.io/badge/README-English-blue)](./README_en.md)
 [![简体中文](https://img.shields.io/badge/README-%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87-red)](./README.md)
+[![English](https://img.shields.io/badge/README-English-blue)](./README_en.md)
 
 </div>
 
