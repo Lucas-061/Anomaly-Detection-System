@@ -1,1 +1,5 @@
 time,source,track_id,alarm_type,alarm_name,level,screenshot,video_clip
+2026-08-09 00:55:51,C:\Users\23304\Desktop\Anomaly-Detection-System\TrainVedio\fall-05.mp4,1,intrusion,违规闯入,二级预警,records\screenshots\intrusion\20260809_005551_id1_intrusion.jpg,records\videos\intrusion\20260809_005551_id1_intrusion.mp4
+2026-08-09 00:55:51,C:\Users\23304\Desktop\Anomaly-Detection-System\TrainVedio\fall-05.mp4,1,cross_fence,翻越围栏,三级预警,records\screenshots\cross_fence\20260809_005551_id1_cross_fence.jpg,records\videos\cross_fence\20260809_005551_id1_cross_fence.mp4
+2026-08-09 00:55:51,C:\Users\23304\Desktop\Anomaly-Detection-System\TrainVedio\fall-05.mp4,1,fall_down,摔倒,三级预警,records\screenshots\fall_down\20260809_005551_id1_fall_down.jpg,records\videos\fall_down\20260809_005551_id1_fall_down.mp4
+2026-08-09 00:55:52,C:\Users\23304\Desktop\Anomaly-Detection-System\TrainVedio\fall-05.mp4,1,intrusion,违规闯入,二级预警,records\screenshots\intrusion\20260809_005552_id1_intrusion.jpg,
