@@ -34,14 +34,6 @@ The system provides a PyQt6 graphical interface and supports both camera input a
 ![Fall detection demo01](./docs/images/show_fall_down_01.jpg)
 ![Fall detection demo02](./docs/images/show_fall_down_02.jpg)
 
-### Run Detection
-
-![Run detection demo](./docs/images/show_run.jpg)
-
-### Intrusion and Fence-Crossing Detection
-
-![Intrusion and fence-crossing detection demo](./docs/images/show_intrusion.jpg)
-
 ### Recognition System Interface
 
 ![Recognition system interface](./docs/images/system_ui.jpg)

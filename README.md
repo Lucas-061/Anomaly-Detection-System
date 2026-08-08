@@ -34,14 +34,6 @@ Anomaly-Detection-System 是一个基于摄像头的室内异常行为识别系�
 ![摔倒检测演示01](./docs/images/show_fall_down_01.jpg)
 ![摔倒检测演示02](./docs/images/show_fall_down_02.jpg)
 
-### 奔跑检测
-
-![奔跑检测演示](./docs/images/show_run.jpg)
-
-### 违规闯入与翻越围栏检测
-
-![违规闯入与翻越围栏检测演示](./docs/images/show_intrusion.jpg)
-
 ### 识别系统界面展示
 
 ![识别系统界面展示](./docs/images/system_ui.jpg)
