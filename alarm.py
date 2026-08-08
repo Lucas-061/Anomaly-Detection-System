@@ -73,6 +73,38 @@ class AlarmManager:    #报警保存管理器，负责保存报警截图和写�
         self.errors.clear()
         return errors
 
+    def remove_records_by_screenshots(self, screenshot_paths: set[str]) -> int:
+        if not screenshot_paths or not self.log_file.exists():
+            return 0
+
+        try:
+            with self.log_file.open("r", newline="", encoding="utf-8") as file:
+                reader = csv.DictReader(file)
+                rows = list(reader)
+                fieldnames = reader.fieldnames or []
+        except Exception as exc:
+            self.errors.append(f"报警记录读取失败：{self.log_file}，原因：{exc}")
+            return 0
+
+        if not fieldnames:
+            return 0
+
+        kept_rows = [row for row in rows if row.get("screenshot", "") not in screenshot_paths]
+        removed_count = len(rows) - len(kept_rows)
+        if removed_count == 0:
+            return 0
+
+        try:
+            with self.log_file.open("w", newline="", encoding="utf-8") as file:
+                writer = csv.DictWriter(file, fieldnames=fieldnames)
+                writer.writeheader()
+                writer.writerows(kept_rows)
+        except Exception as exc:
+            self.errors.append(f"报警记录删除失败：{self.log_file}，原因：{exc}")
+            return 0
+
+        return removed_count
+
     def _ensure_log_header(self) -> None:    #确保报警日志 CSV 存在且表头为最新格式
         self.output_dir.mkdir(parents=True, exist_ok=True)
         header = ["time", "source", "track_id", "alarm_type", "alarm_name", "level", "screenshot", "video_clip"]

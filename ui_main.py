@@ -8,6 +8,7 @@ from PyQt6.QtCore import Qt, QTimer, pyqtSignal
 from PyQt6.QtGui import QAction, QColor, QFont, QImage, QPixmap
 from PyQt6.QtWidgets import (
     QApplication,
+    QDialog,
     QFileDialog,
     QFrame,
     QHeaderView,
@@ -80,6 +81,7 @@ CRITICAL_WARNING_REARM_FRAMES = 60
 
 VIDEO_EXTENSIONS = {".mp4", ".avi", ".mov", ".mkv", ".wmv", ".flv", ".m4v"}
 TRAIN_VIDEO_DIR = Path(__file__).resolve().parent / "TrainVedio"
+RECORDS_DIR = Path(__file__).resolve().parent / "records"
 ALARM_LOG_FILE = Path(__file__).resolve().parent / "records" / "alarm_log.csv"
 
 
@@ -275,6 +277,8 @@ class MainWindow(QMainWindow):    #系统主窗口，负责界面显示、按钮
         self.motion_status_repeat_count: dict[int, int] = {}
         self.saved_critical_alarm_keys: set[tuple[int, str]] = set()
         self.critical_alarm_absent_frames: dict[tuple[int, str], int] = {}
+        self.session_screenshots: list[str] = []
+        self.session_video_clips: list[str] = []
         self.last_frame_at = time.time()
         self.fps = 0.0
 
@@ -592,7 +596,7 @@ class MainWindow(QMainWindow):    #系统主窗口，负责界面显示、按钮
 
     def show_alarm_log(self) -> None:    #打开报警记录窗口，显示历史报警 CSV 数据
         if not ALARM_LOG_FILE.exists():
-            QMessageBox.information(self, "报警记录", "当前还没有报警记录。")
+            self.show_styled_message("报警记录", "当前还没有报警记录。", QMessageBox.Icon.Information)
             return
         self.alarm_log_window = AlarmLogDialog(ALARM_LOG_FILE, self)
         self.alarm_log_window.show()
@@ -670,6 +674,8 @@ class MainWindow(QMainWindow):    #系统主窗口，负责界面显示、按钮
         self.stop_capture()
         self.current_source = source
         self.current_mode = mode_name
+        self.session_screenshots.clear()
+        self.session_video_clips.clear()
         self.tracker = CentroidTracker()
         if reset_fence:
             self.fence = VirtualFence()
@@ -759,6 +765,8 @@ class MainWindow(QMainWindow):    #系统主窗口，负责界面显示、按钮
             should_save_alarm = self.should_save_alarm_file(track_id, alarm_type, level)
             if should_save_alarm:
                 video_clip = self.clip_recorder.start_clip(alarm_type, track_id)
+                if video_clip:
+                    self.session_video_clips.append(video_clip)
                 screenshot = self.alarm_manager.trigger(
                     frame,
                     track_id,
@@ -767,6 +775,8 @@ class MainWindow(QMainWindow):    #系统主窗口，负责界面显示、按钮
                     source=str(self.current_source) if self.current_source is not None else "",
                     video_clip=video_clip,
                 )
+                if screenshot:
+                    self.session_screenshots.append(screenshot)
             else:
                 screenshot = None
             if screenshot:
@@ -906,8 +916,9 @@ class MainWindow(QMainWindow):    #系统主窗口，负责界面显示、按钮
         return result
 
     def finish_current_video(self) -> None:    #识别结束后停止识别，保存未完成的报警片段，并提示用户可重新播放或退出识别
-        self.clip_recorder.finish_all()
-        self.stop_capture()
+        self.clip_recorder.finish_all(wait=True)
+        self.stop_capture(finish_clips=False)
+        self.ask_keep_session_records()
         self.video_label.show_message("识别完成，可再次点击播放重新识别")
         self.set_status("已完成")
         self.mode_label.setText("识别完成")
@@ -916,6 +927,169 @@ class MainWindow(QMainWindow):    #系统主窗口，负责界面显示、按钮
         self.choose_button.setEnabled(False)
         self.return_button.setEnabled(True)
         self.playback_button.setEnabled(self.pending_video_source is not None)
+
+    def ask_keep_session_records(self) -> None:
+        if not self.session_screenshots and not self.session_video_clips:
+            return
+
+        keep_records = self.ask_keep_records_dialog()
+        if not keep_records:
+            removed_files, removed_rows = self.discard_session_records()
+            self.add_data_item(f"已删除本次记录：文件 {removed_files} 个，CSV 记录 {removed_rows} 条")
+        else:
+            self.add_data_item("已保留本次报警截图、视频片段和报警记录")
+
+        self.session_screenshots.clear()
+        self.session_video_clips.clear()
+
+    def ask_keep_records_dialog(self) -> bool:
+        dialog = QDialog(self)
+        dialog.setWindowTitle("保留本次记录")
+        dialog.setModal(True)
+
+        root = QVBoxLayout(dialog)
+        root.setContentsMargins(18, 18, 18, 16)
+        root.setSpacing(16)
+
+        content = QHBoxLayout()
+        content.setSpacing(14)
+
+        icon = QLabel("?")
+        icon.setFixedSize(44, 44)
+        icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        icon.setObjectName("dialogQuestionIcon")
+
+        message = QLabel("本次识别已产生报警截图、视频片段或报警记录，是否保留本次记录？")
+        message.setWordWrap(False)
+        message.setObjectName("dialogMessage")
+
+        content.addWidget(icon)
+        content.addWidget(message)
+        root.addLayout(content)
+
+        buttons = QHBoxLayout()
+        buttons.addStretch(1)
+        keep_button = QPushButton("保留")
+        discard_button = QPushButton("不保留")
+        keep_button.clicked.connect(dialog.accept)
+        discard_button.clicked.connect(dialog.reject)
+        buttons.addWidget(keep_button)
+        buttons.addWidget(discard_button)
+        buttons.addStretch(1)
+        root.addLayout(buttons)
+
+        dialog.setStyleSheet(
+            """
+            QDialog {
+                background: #242424;
+                color: #eeeeee;
+                font-family: "SimSun", "Microsoft YaHei UI";
+            }
+            QLabel#dialogQuestionIcon {
+                background: #1497dd;
+                color: #ffffff;
+                border-radius: 22px;
+                font-size: 28px;
+            }
+            QLabel#dialogMessage {
+                color: #eeeeee;
+                font-size: 16px;
+                padding: 2px 0;
+            }
+            QPushButton {
+                background: #343434;
+                color: #e8e8e8;
+                border: 1px solid #555555;
+                min-width: 96px;
+                min-height: 34px;
+                font-size: 15px;
+            }
+            QPushButton:hover {
+                background: #3f3f3f;
+                border: 1px solid #1aa0e8;
+            }
+            QPushButton:pressed {
+                background: #292929;
+                border: 1px solid #1380bb;
+            }
+            """
+        )
+        return dialog.exec() == QDialog.DialogCode.Accepted
+
+    def show_styled_message(self, title: str, text: str, icon: QMessageBox.Icon) -> None:
+        box = self.create_styled_message_box(title, text, icon)
+        box.setStandardButtons(QMessageBox.StandardButton.Ok)
+        box.button(QMessageBox.StandardButton.Ok).setText("确定")
+        box.exec()
+
+    def create_styled_message_box(self, title: str, text: str, icon: QMessageBox.Icon) -> QMessageBox:
+        box = QMessageBox(self)
+        box.setWindowTitle(title)
+        box.setText(text)
+        box.setIcon(icon)
+        box.setStyleSheet(
+            """
+            QMessageBox {
+                background: #242424;
+                color: #eeeeee;
+                font-family: "SimSun", "Microsoft YaHei UI";
+                font-size: 15px;
+            }
+            QMessageBox QLabel {
+                color: #eeeeee;
+                background: transparent;
+                min-width: 280px;
+                max-width: 360px;
+                padding: 6px 4px;
+                line-height: 1.4;
+                qproperty-alignment: AlignLeft;
+            }
+            QMessageBox QPushButton {
+                background: #343434;
+                color: #e8e8e8;
+                border: 1px solid #555555;
+                min-width: 78px;
+                min-height: 32px;
+                padding: 4px 12px;
+                font-family: "SimSun", "Microsoft YaHei UI";
+                font-size: 14px;
+            }
+            QMessageBox QPushButton:hover {
+                background: #3f3f3f;
+                border: 1px solid #1aa0e8;
+            }
+            QMessageBox QPushButton:pressed {
+                background: #292929;
+                border: 1px solid #1380bb;
+            }
+            """
+        )
+        return box
+
+    def discard_session_records(self) -> tuple[int, int]:
+        removed_files = 0
+        paths = [Path(path) for path in self.session_screenshots + self.session_video_clips if path]
+        for path in paths:
+            try:
+                if not self.is_safe_session_record_path(path):
+                    self.add_data_item(f"已阻止非记录目录删除：{path}", level="三级预警")
+                    continue
+                if path.exists() and path.is_file():
+                    path.unlink()
+                    removed_files += 1
+            except Exception as exc:
+                self.add_data_item(f"本次记录删除失败：{path}，原因：{exc}", level="三级预警")
+
+        removed_rows = self.alarm_manager.remove_records_by_screenshots(set(self.session_screenshots))
+        return removed_files, removed_rows
+
+    def is_safe_session_record_path(self, path: Path) -> bool:
+        try:
+            resolved_path = path.resolve()
+            resolved_records = RECORDS_DIR.resolve()
+        except Exception:
+            return False
+        return resolved_path.is_relative_to(resolved_records)
 
     def return_home(self) -> None:    #停止当前识别任务，清空状态，返回初始主页面
         self.stop_capture()
@@ -935,9 +1109,10 @@ class MainWindow(QMainWindow):    #系统主窗口，负责界面显示、按钮
         self.return_button.setEnabled(False)
         self.playback_button.setEnabled(False)
 
-    def stop_capture(self) -> None:    #停止定时器，释放摄像头或视频文件资源，并保存未完成的报警片段
+    def stop_capture(self, finish_clips: bool = True) -> None:    #停止定时器，释放摄像头或视频文件资源，并保存未完成的报警片段
         self.timer.stop()
-        self.clip_recorder.finish_all()
+        if finish_clips:
+            self.clip_recorder.finish_all()
         if self.capture is not None:
             self.capture.release()
             self.capture = None

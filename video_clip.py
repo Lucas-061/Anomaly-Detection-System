@@ -37,6 +37,7 @@ class AlarmClipRecorder:    #报警视频片段录制器，负责缓存报警前
         self.pre_buffer = deque()
         self.active_clips: list[ActiveClip] = []
         self.executor = ThreadPoolExecutor(max_workers=1)
+        self.pending_futures = []
         self.errors: list[str] = []
         self.error_lock = Lock()
         self.output_dir.mkdir(parents=True, exist_ok=True)
@@ -97,16 +98,19 @@ class AlarmClipRecorder:    #报警视频片段录制器，负责缓存报警前
         self.active_clips.append(clip)
         return str(path)
 
-    def finish_all(self) -> None:    #结束识别时，将所有未完成的视频片段写入文件
+    def finish_all(self, wait: bool = False) -> None:    #结束识别时，将所有未完成的视频片段写入文件
         for clip in self.active_clips:
             self._write_clip(clip)
         self.active_clips.clear()
+        if wait:
+            self.wait_for_writes()
 
     def _write_clip(self, clip: ActiveClip) -> None:    #将视频写入任务提交给后台线程，避免阻塞 PyQt6 主界面，防卡顿
         frames = [frame.copy() for frame in clip.frames]
         path = clip.path
         fps = self.fps
-        self.executor.submit(self._write_clip_sync, path, frames, fps)
+        future = self.executor.submit(self._write_clip_sync, path, frames, fps)
+        self.pending_futures.append(future)
 
     def _write_clip_sync(self, path: Path, frames: list, fps: float) -> None:    #后台线程执行的视频写入入口，负责异常捕获
         try:
@@ -138,6 +142,14 @@ class AlarmClipRecorder:    #报警视频片段录制器，负责缓存报警前
             errors = self.errors[:]
             self.errors.clear()
         return errors
+
+    def wait_for_writes(self) -> None:
+        for future in self.pending_futures:
+            try:
+                future.result()
+            except Exception as exc:
+                self._add_error(f"报警视频片段后台写入失败，原因：{exc}")
+        self.pending_futures.clear()
 
     def _add_error(self, message: str) -> None:    #记录后台保存视频时产生的错误信息，供 UI 定时读取并显示
         with self.error_lock:
