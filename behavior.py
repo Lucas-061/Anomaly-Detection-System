@@ -3,7 +3,7 @@ import time
 from tracker import Track
 
 
-class BehaviorAnalyzer:
+class BehaviorAnalyzer:    #异常行为分析器，根据跟踪信息和围栏状态判断是否发生异常行为
     def __init__(
         self,
         stay_seconds: float = 8.0,
@@ -16,7 +16,7 @@ class BehaviorAnalyzer:
         self.fall_ratio = fall_ratio
         self.climb_pixels = climb_pixels
 
-    def analyze(self, track: Track, inside_fence: bool) -> list[tuple[str, str]]:
+    def analyze(self, track: Track, inside_fence: bool) -> list[tuple[str, str]]:    #综合判断，违规闯入、翻越围栏、长时间滞留、摔倒、奔跑、攀爬，并返回报警类型和预警等级
         now = time.time()
         alarms: list[tuple[str, str]] = []
 
@@ -47,7 +47,7 @@ class BehaviorAnalyzer:
 
         return alarms
 
-    def _is_falling(self, track: Track) -> bool:
+    def _is_falling(self, track: Track) -> bool:    #摔倒，根据人体框宽高比判断是否可能摔倒
         x1, y1, x2, y2 = track.bbox
         width = max(x2 - x1, 1)
         height = max(y2 - y1, 1)
@@ -60,7 +60,7 @@ class BehaviorAnalyzer:
 
         return track.fall_frames >= 4
 
-    def _is_running(self, track: Track) -> bool:
+    def _is_running(self, track: Track) -> bool:    #奔跑，根据人员中心点移动速度判断是否奔跑
         if track.speed >= self.run_speed:
             track.run_frames += 1
         else:
@@ -68,7 +68,7 @@ class BehaviorAnalyzer:
 
         return track.run_frames >= 3
 
-    def _is_climbing(self, track: Track) -> bool:
+    def _is_climbing(self, track: Track) -> bool:    #攀爬，根据人员中心点持续上移判断是否攀爬
         if len(track.history) < 8:
             return False
 

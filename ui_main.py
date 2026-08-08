@@ -33,7 +33,7 @@ from tracker import CentroidTracker
 from video_clip import AlarmClipRecorder
 
 
-ALARM_NAMES = {
+ALARM_NAMES = {    #预警项目
     "intrusion": "违规闯入",
     "cross_fence": "翻越围栏",
     "long_stay": "长时间滞留",
@@ -57,9 +57,9 @@ MODE_NAMES_EN = {
 }
 
 WARNING_COLORS = {
-    "一级预警": "#c19a00",
-    "二级预警": "#d06f00",
-    "三级预警": "#c50f1f",
+    "一级预警": "#e7d06a",
+    "二级预警": "#f2a65a",
+    "三级预警": "#ff6b6b",
 }
 
 WARNING_NAMES_EN = {
@@ -68,11 +68,11 @@ WARNING_NAMES_EN = {
     "三级预警": "Level 3",
 }
 
-WARNING_STATUS_STYLES = {
-    "一级预警": "color: #6f5200; background: #fff4ce; border: 1px solid #f1d36b;",
-    "二级预警": "color: #7a3b00; background: #fde7d3; border: 1px solid #f3b36b;",
-    "三级预警": "color: #a80000; background: #fde7e9; border: 1px solid #f1aeb5;",
-    "异常": "color: #a80000; background: #fde7e9; border: 1px solid #f1aeb5;",
+WARNING_STATUS_STYLES = {    #数据显示框
+    "一级预警": "color: #e7d06a; background: #3f3822; border: 1px solid #7d6c2c;",
+    "二级预警": "color: #f2a65a; background: #46321f; border: 1px solid #8a5b2c;",
+    "三级预警": "color: #ff6b6b; background: #4a2525; border: 1px solid #9a4646;",
+    "异常": "color: #ff6b6b; background: #4a2525; border: 1px solid #9a4646;",
 }
 
 CRITICAL_WARNING_LEVEL = "三级预警"
@@ -83,7 +83,7 @@ TRAIN_VIDEO_DIR = Path(__file__).resolve().parent / "TrainVedio"
 ALARM_LOG_FILE = Path(__file__).resolve().parent / "records" / "alarm_log.csv"
 
 
-class VideoLabel(QLabel):
+class VideoLabel(QLabel):    #视频显示控件，用于在 PyQt6 界面中显示 OpenCV 视频帧，并接收鼠标点击绘制围栏
     frame_clicked = pyqtSignal(int, int, object)
 
     def __init__(self):
@@ -96,13 +96,13 @@ class VideoLabel(QLabel):
         self.frame_size: tuple[int, int] | None = None
         self.pixmap_rect = None
 
-    def show_message(self, text: str) -> None:
+    def show_message(self, text: str) -> None:    #在视频显示框中显示提示文字
         self.clear()
         self.setText(text)
         self.frame_size = None
         self.pixmap_rect = None
 
-    def show_frame(self, frame) -> None:
+    def show_frame(self, frame) -> None:    #将 OpenCV 的 BGR 图像帧转换为 PyQt6 可显示的 QPixmap，并显示到视频画面框
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         height, width, channel = rgb.shape
         self.frame_size = (width, height)
@@ -119,13 +119,13 @@ class VideoLabel(QLabel):
         self.setText("")
         self.setPixmap(pixmap)
 
-    def mousePressEvent(self, event) -> None:
+    def mousePressEvent(self, event) -> None:    #捕获用户在视频画面上的鼠标点击事件
         frame_point = self.to_frame_point(int(event.position().x()), int(event.position().y()))
         if frame_point is not None:
             self.frame_clicked.emit(frame_point[0], frame_point[1], event.button())
         super().mousePressEvent(event)
 
-    def to_frame_point(self, label_x: int, label_y: int) -> tuple[int, int] | None:
+    def to_frame_point(self, label_x: int, label_y: int) -> tuple[int, int] | None:    #将 PyQt6 控件坐标转换为真实视频帧坐标，保证围栏点画在正确的视频位
         if self.frame_size is None or self.pixmap_rect is None:
             return None
 
@@ -141,7 +141,7 @@ class VideoLabel(QLabel):
         return frame_x, frame_y
 
 
-class AlarmLogDialog(QMainWindow):
+class AlarmLogDialog(QMainWindow):    #报警记录查看窗口，用表格形式显示 alarm_log.csv 中的历史报警信息
     def __init__(self, log_file: Path, parent=None):
         super().__init__(parent)
         self.log_file = log_file
@@ -164,29 +164,53 @@ class AlarmLogDialog(QMainWindow):
         self.setStyleSheet(
             """
             QMainWindow {
-                background: #f3f3f3;
+                background: #1a1a1a;
+                font-family: "Consolas", "SimSun", "Microsoft YaHei UI";
             }
             QTableWidget {
-                background: #ffffff;
-                alternate-background-color: #fafafa;
-                border: 1px solid #d1d1d1;
-                gridline-color: #eeeeee;
-                color: #242424;
+                background: #303030;
+                alternate-background-color: #3a3a3a;
+                border: 1px solid #4a4a4a;
+                gridline-color: #4b4b4b;
+                color: #eeeeee;
+                font-family: "Consolas", "SimSun", "Microsoft YaHei UI";
                 font-size: 15px;
+                selection-background-color: #4b5964;
+                selection-color: #ffffff;
             }
             QHeaderView::section {
-                background: #f5f5f5;
-                color: #1b1b1b;
+                background: #3a3a3a;
+                color: #edf0f2;
+                font-family: "SimSun", "Microsoft YaHei UI";
                 border: 0;
-                border-right: 1px solid #e5e5e5;
-                border-bottom: 1px solid #d1d1d1;
-                padding: 7px;
+                border-right: 1px solid #555555;
+                border-bottom: 1px solid #555555;
+                padding: 9px;
                 font-weight: 600;
+            }
+            QScrollBar:vertical, QScrollBar:horizontal {
+                background: #2a2a2a;
+                width: 12px;
+                height: 12px;
+                margin: 0;
+            }
+            QScrollBar::handle:vertical, QScrollBar::handle:horizontal {
+                background: #696969;
+                min-height: 26px;
+                min-width: 26px;
+                border-radius: 0;
+            }
+            QScrollBar::handle:vertical:hover, QScrollBar::handle:horizontal:hover {
+                background: #858585;
+            }
+            QScrollBar::add-line, QScrollBar::sub-line {
+                width: 0;
+                height: 0;
             }
             """
         )
 
-    def load_records(self) -> None:
+    def load_records(self) -> None:    #读取 records/alarm_log.csv，将报警记录加载到表格中
         self.table.setRowCount(0)
         if not self.log_file.exists():
             return
@@ -216,7 +240,7 @@ class AlarmLogDialog(QMainWindow):
 
         self.apply_table_layout()
 
-    def apply_table_layout(self) -> None:
+    def apply_table_layout(self) -> None:    #设置报警记录表格的列宽和显示方式
         header = self.table.horizontalHeader()
         for column in range(self.table.columnCount()):
             header.setSectionResizeMode(column, QHeaderView.ResizeMode.Interactive)
@@ -228,7 +252,7 @@ class AlarmLogDialog(QMainWindow):
         header.setSectionResizeMode(7, QHeaderView.ResizeMode.Stretch)
 
 
-class MainWindow(QMainWindow):
+class MainWindow(QMainWindow):    #系统主窗口，负责界面显示、按钮交互、视频读取、识别调度和报警处理
     def __init__(self):
         super().__init__()
         self.setWindowTitle("基于摄像头的异常行为识别系统")
@@ -268,6 +292,7 @@ class MainWindow(QMainWindow):
         self.mode_label.setObjectName("modeLabel")
         self.data_list = QListWidget()
         self.data_list.setObjectName("dataList")
+        self.data_list.setAlternatingRowColors(True)
 
         self.choose_button = QPushButton("识别方式选择")
         self.choose_button.setObjectName("primaryButton")
@@ -292,12 +317,12 @@ class MainWindow(QMainWindow):
         self.setup_ui()
         self.return_home()
 
-    def setup_ui(self) -> None:
+    def setup_ui(self) -> None:    #搭建主界面布局，包括视频显示区、数据显示框、操作按钮和整体样式
         central = QWidget()
         central.setObjectName("page")
         root = QHBoxLayout(central)
-        root.setContentsMargins(28, 24, 28, 24)
-        root.setSpacing(24)
+        root.setContentsMargins(12, 12, 12, 12)
+        root.setSpacing(14)
 
         video_title = QLabel("异常行为识别监控")
         video_title.setObjectName("videoTitle")
@@ -314,21 +339,21 @@ class MainWindow(QMainWindow):
         video_panel = QFrame()
         video_panel.setObjectName("videoPanel")
         video_panel_layout = QVBoxLayout(video_panel)
-        video_panel_layout.setContentsMargins(20, 18, 20, 20)
-        video_panel_layout.setSpacing(14)
+        video_panel_layout.setContentsMargins(12, 12, 12, 12)
+        video_panel_layout.setSpacing(12)
         video_panel_layout.addLayout(video_header)
         video_panel_layout.addWidget(self.video_label, stretch=1)
 
         root.addWidget(video_panel, stretch=1)
 
         side = QVBoxLayout()
-        side.setSpacing(18)
+        side.setSpacing(12)
 
         side_panel = QFrame()
         side_panel.setObjectName("sidePanel")
         side_panel_layout = QVBoxLayout(side_panel)
-        side_panel_layout.setContentsMargins(18, 18, 18, 18)
-        side_panel_layout.setSpacing(18)
+        side_panel_layout.setContentsMargins(12, 12, 12, 12)
+        side_panel_layout.setSpacing(12)
 
         data_title = QLabel("数据显示框")
         data_title.setObjectName("panelTitle")
@@ -336,7 +361,7 @@ class MainWindow(QMainWindow):
 
         data_panel = QVBoxLayout()
         data_panel.setSpacing(10)
-        data_panel.setContentsMargins(16, 16, 16, 16)
+        data_panel.setContentsMargins(12, 12, 12, 12)
         data_panel.addWidget(data_title)
         data_panel.addWidget(self.mode_label)
         data_panel.addWidget(self.data_list)
@@ -367,156 +392,194 @@ class MainWindow(QMainWindow):
 
         self.setStyleSheet(
             """
+            QWidget {
+                font-family: "SimSun", "Microsoft YaHei UI";
+            }
             QWidget#page {
-                background: #f3f3f3;
+                background: #1a1a1a;
             }
             QFrame#videoPanel, QFrame#sidePanel {
-                background: #ffffff;
-                border: 1px solid #e5e5e5;
-                border-radius: 8px;
+                background: #232323;
+                border: 1px solid #3a3a3a;
+                border-radius: 0;
             }
             QFrame#sidePanel {
-                min-width: 360px;
-                max-width: 390px;
+                min-width: 370px;
+                max-width: 410px;
             }
             QLabel#videoTitle {
-                color: #1b1b1b;
-                font-family: "Segoe UI", "Microsoft YaHei";
-                font-size: 24px;
+                color: #e8edf2;
+                font-family: "SimSun", "Microsoft YaHei UI";
+                font-size: 22px;
                 font-weight: 600;
+                padding: 4px 0 8px 0;
             }
             QLabel#videoCaption {
-                color: #616161;
-                font-family: "Segoe UI", "Microsoft YaHei";
+                color: #9ca7b2;
+                font-family: "SimSun", "Microsoft YaHei UI";
                 font-size: 14px;
                 font-weight: 500;
                 padding-right: 8px;
             }
             QLabel#statusLabel {
-                border-radius: 12px;
-                padding: 4px 12px;
+                border-radius: 0;
+                padding: 6px 12px;
                 font-size: 14px;
                 font-weight: 600;
             }
             QLabel#videoLabel {
-                border: 1px solid #d1d1d1;
-                border-radius: 6px;
-                background: #fafafa;
-                color: #242424;
-                font-family: "Segoe UI", "Microsoft YaHei";
-                font-size: 40px;
+                border: 1px solid #444444;
+                border-radius: 0;
+                background: #111111;
+                color: #b8c1cb;
+                font-family: "SimSun", "Microsoft YaHei UI";
+                font-size: 36px;
                 font-weight: 600;
             }
             QLabel#panelTitle {
-                color: #1b1b1b;
-                min-height: 34px;
-                font-family: "Segoe UI", "Microsoft YaHei";
-                font-size: 23px;
+                color: #f0f3f6;
+                min-height: 36px;
+                font-family: "SimSun", "Microsoft YaHei UI";
+                font-size: 20px;
                 font-weight: 600;
+                background: #333333;
+                border: 1px solid #454545;
+                padding: 4px 8px;
             }
             QLabel#modeLabel {
-                color: #424242;
-                background: #f8f8f8;
-                border: 1px solid #e5e5e5;
-                border-radius: 6px;
-                padding: 8px 10px;
+                color: #e2e2e2;
+                background: #333333;
+                border: 1px solid #454545;
+                border-left: 4px solid #1aa0e8;
+                border-radius: 0;
+                padding: 10px 12px;
                 font-size: 14px;
             }
             QLabel#sectionTitle {
-                color: #616161;
-                font-size: 15px;
+                color: #dfe5eb;
+                font-size: 16px;
                 font-weight: 600;
-                padding-top: 4px;
+                padding: 12px 0 2px 0;
             }
             QFrame#dataPanel {
-                background: #ffffff;
-                border: 1px solid #e5e5e5;
-                border-radius: 8px;
+                background: #2a2a2a;
+                border: 1px solid #444444;
+                border-radius: 0;
             }
             QListWidget#dataList {
-                border: 1px solid #e5e5e5;
-                border-radius: 6px;
-                background: #fafafa;
-                color: #242424;
+                border: 1px solid #4a4a4a;
+                border-radius: 0;
+                background: #2f2f2f;
+                alternate-background-color: #383838;
+                color: #eeeeee;
+                font-family: "Consolas", "SimSun", "Microsoft YaHei UI";
                 font-size: 15px;
-                padding: 8px;
+                padding: 6px;
                 outline: 0;
             }
             QListWidget#dataList::item {
-                min-height: 26px;
-                padding: 4px 6px;
-                border-bottom: 1px solid #eeeeee;
+                min-height: 30px;
+                padding: 6px 8px;
+                border-bottom: 1px solid #4b4b4b;
             }
             QListWidget#dataList::item:selected {
-                background: #e5f1fb;
-                color: #1b1b1b;
+                background: #4b5964;
+                color: #ffffff;
             }
             QPushButton {
-                border: 0;
-                border-radius: 5px;
-                color: #ffffff;
+                border: 1px solid #505050;
+                border-radius: 0;
+                color: #e8e8e8;
                 min-height: 52px;
-                font-family: "Segoe UI", "Microsoft YaHei";
-                font-size: 20px;
+                font-family: "SimSun", "Microsoft YaHei UI";
+                font-size: 18px;
                 font-weight: 600;
+                padding: 5px 16px;
             }
             QPushButton#primaryButton {
-                background: #0f6cbd;
+                background: #343434;
+                border-color: #555555;
             }
             QPushButton#primaryButton:hover {
-                background: #115ea3;
+                background: #3f3f3f;
+                border-color: #1aa0e8;
             }
             QPushButton#primaryButton:pressed {
-                background: #0f548c;
+                background: #292929;
+                border-color: #1380bb;
             }
             QPushButton#dangerButton {
-                background: #c50f1f;
+                background: #343434;
+                border-color: #555555;
+                color: #ffb3b3;
             }
             QPushButton#dangerButton:hover {
-                background: #a80000;
+                background: #3f3f3f;
+                border-color: #ff6b6b;
             }
             QPushButton#dangerButton:pressed {
-                background: #8f0000;
+                background: #292929;
+                border-color: #c94f4f;
             }
             QPushButton#secondaryButton {
-                background: #ffffff;
-                color: #242424;
-                border: 1px solid #d1d1d1;
+                background: #343434;
+                color: #e8e8e8;
+                border: 1px solid #555555;
             }
             QPushButton#secondaryButton:hover {
-                background: #f5f5f5;
-                border: 1px solid #c7c7c7;
+                background: #3f3f3f;
+                border: 1px solid #7a7a7a;
             }
             QPushButton#secondaryButton:pressed {
-                background: #ededed;
+                background: #292929;
             }
             QPushButton:disabled {
-                background: #f0f0f0;
-                color: #a6a6a6;
-                border: 1px solid #e0e0e0;
+                background: #282828;
+                color: #777777;
+                border: 1px solid #3a3a3a;
             }
             QMenu {
-                background: white;
-                border: 1px solid #d1d1d1;
-                border-radius: 6px;
+                background: #dedede;
+                color: #202020;
+                border: 1px solid #777777;
+                border-radius: 0;
                 font-size: 16px;
             }
             QMenu::item {
-                padding: 10px 28px;
+                padding: 11px 28px;
+                background: transparent;
+                border: 1px solid transparent;
             }
             QMenu::item:selected {
-                background: #e5f1fb;
-                color: #0f6cbd;
+                background: #cfcfcf;
+                color: #101010;
+                border: 1px solid #1aa0e8;
+            }
+            QScrollBar:vertical {
+                background: #2a2a2a;
+                width: 12px;
+                margin: 0;
+            }
+            QScrollBar::handle:vertical {
+                background: #696969;
+                min-height: 26px;
+                border-radius: 0;
+            }
+            QScrollBar::handle:vertical:hover {
+                background: #858585;
+            }
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                height: 0;
             }
             """
         )
 
-    def show_mode_menu(self) -> None:
+    def show_mode_menu(self) -> None:    #点击“识别方式选择”后弹出菜单，让用户选择摄像头识别或文件夹视频识别
         if self.timer.isActive():
             return
 
         menu = QMenu(self)
-        camera_action = QAction("摄像头识别", self)
+        camera_action = QAction("摄像头识别", self)    #摄像头识别
         folder_action = QAction("文件夹视频识别", self)
         camera_action.triggered.connect(self.start_camera)
         folder_action.triggered.connect(self.choose_folder_video)
@@ -524,17 +587,17 @@ class MainWindow(QMainWindow):
         menu.addAction(folder_action)
         menu.exec(self.choose_button.mapToGlobal(self.choose_button.rect().bottomLeft()))
 
-    def start_camera(self) -> None:
+    def start_camera(self) -> None:    #启动摄像头识别模式
         self.start_source(0, "摄像头识别")
 
-    def show_alarm_log(self) -> None:
+    def show_alarm_log(self) -> None:    #打开报警记录窗口，显示历史报警 CSV 数据
         if not ALARM_LOG_FILE.exists():
             QMessageBox.information(self, "报警记录", "当前还没有报警记录。")
             return
         self.alarm_log_window = AlarmLogDialog(ALARM_LOG_FILE, self)
         self.alarm_log_window.show()
 
-    def choose_folder_video(self) -> None:
+    def choose_folder_video(self) -> None:    #打开文件选择窗口，自选视频文件
         TRAIN_VIDEO_DIR.mkdir(exist_ok=True)
         file_filter = "视频文件 (*.mp4 *.avi *.mov *.mkv *.wmv *.flv *.m4v);;所有文件 (*)"
         file_path, _ = QFileDialog.getOpenFileName(
@@ -549,7 +612,7 @@ class MainWindow(QMainWindow):
         video_path = Path(file_path)
         self.prepare_video_source(str(video_path), f"文件夹视频识别：{video_path.name}")
 
-    def prepare_video_source(self, source: str, mode_name: str) -> None:
+    def prepare_video_source(self, source: str, mode_name: str) -> None:    #选择视频后先读取第一帧并显示，等待用户绘制虚拟围栏和点击播放，不立即开始识别
         self.stop_capture()
         self.current_source = source
         self.current_mode = mode_name
@@ -598,12 +661,12 @@ class MainWindow(QMainWindow):
         self.playback_button.setEnabled(True)
         self.show_prepared_frame()
 
-    def play_prepared_video(self) -> None:
+    def play_prepared_video(self) -> None:    #用户点击“播放”后，开始识别之前选择好的视频
         if self.pending_video_source is None or self.pending_video_mode is None:
             return
         self.start_source(self.pending_video_source, self.pending_video_mode, reset_fence=False)
 
-    def start_source(self, source, mode_name: str, reset_fence: bool = True) -> None:
+    def start_source(self, source, mode_name: str, reset_fence: bool = True) -> None:    #打开摄像头或视频文件，初始化跟踪器、行为分析器、报警片段缓存，并启动定时器开始逐帧识别
         self.stop_capture()
         self.current_source = source
         self.current_mode = mode_name
@@ -615,7 +678,7 @@ class MainWindow(QMainWindow):
         self.fps = 0.0
         self.last_frame_at = time.time()
 
-        self.capture = cv2.VideoCapture(source)
+        self.capture = cv2.VideoCapture(source)    #打开摄像头或本地视频文件，cv2.VideoCapture(0)表示打开摄像头
         if not self.capture.isOpened():
             self.capture = None
             self.video_label.show_message("视频源打开失败")
@@ -638,7 +701,7 @@ class MainWindow(QMainWindow):
         self.playback_button.setEnabled(False)
         self.timer.start(1)
 
-    def handle_video_click(self, x: int, y: int, button) -> None:
+    def handle_video_click(self, x: int, y: int, button) -> None:     #处理视频画面上的鼠标点击。左键添加围栏点，右键清空围栏
         if self.capture is None and self.prepared_frame is None:
             return
 
@@ -652,11 +715,11 @@ class MainWindow(QMainWindow):
         if self.capture is None and self.prepared_frame is not None:
             self.show_prepared_frame()
 
-    def update_frame(self) -> None:
+    def update_frame(self) -> None:    #系统识别主循环函数。每次读取一帧视频，完成 YOLO 检测、目标跟踪、围栏判断、行为识别、报警保存和界面刷新
         if self.capture is None:
             return
 
-        ok, frame = self.capture.read()
+        ok, frame = self.capture.read()    # openCV逐帧读取摄像头画，根指令
         if not ok:
             self.finish_current_video()
             return
@@ -717,13 +780,13 @@ class MainWindow(QMainWindow):
         self.clip_recorder.add_frame(frame)
         self.show_storage_errors()
 
-    def resize_frame(self, frame):
+    def resize_frame(self, frame):    #当视频宽度过大时，将画面缩放到合适宽度，降低识别和显示压力
         if frame.shape[1] > 960:
             scale = 960 / frame.shape[1]
             return cv2.resize(frame, (960, int(frame.shape[0] * scale)))
         return frame
 
-    def show_prepared_frame(self) -> None:
+    def show_prepared_frame(self) -> None:    #在视频未播放前显示第一帧，并叠加用户绘制的虚拟围栏
         if self.prepared_frame is None:
             return
         frame = self.prepared_frame.copy()
@@ -731,7 +794,7 @@ class MainWindow(QMainWindow):
         self.draw_overlay(frame, 0, [])
         self.video_label.show_frame(frame)
 
-    def add_data_item(self, text: str, alarm_type: str | None = None, level: str | None = None) -> None:
+    def add_data_item(self, text: str, alarm_type: str | None = None, level: str | None = None) -> None:    #向右侧数据显示框添加信息，并根据预警等级设置文字颜色
         item = QListWidgetItem(text)
         color = WARNING_COLORS.get(level or "")
         if color:
@@ -740,17 +803,17 @@ class MainWindow(QMainWindow):
             font.setBold(True)
             item.setFont(font)
         elif alarm_type == "cross_fence":
-            item.setForeground(QColor("#c50f1f"))
+            item.setForeground(QColor("#ff6b6b"))
         self.data_list.addItem(item)
 
-    def show_storage_errors(self) -> None:
+    def show_storage_errors(self) -> None:    #收集截图、CSV、视频片段保存过程中的错误，并显示到右侧数据显示框
         errors = self.alarm_manager.collect_errors() + self.clip_recorder.collect_errors()
         for error in errors:
             self.add_data_item(error, level="三级预警")
         if errors:
             self.data_list.scrollToBottom()
 
-    def should_display_motion_status(self, track_id: int, alarm_type: str, level: str) -> bool:
+    def should_display_motion_status(self, track_id: int, alarm_type: str, level: str) -> bool:    #限制右侧数据显示框重复刷屏。同一目标同一状态最多显示 3 条
         status_key = (alarm_type, level)
         if self.last_motion_status_by_track.get(track_id) != status_key:
             self.last_motion_status_by_track[track_id] = status_key
@@ -761,13 +824,13 @@ class MainWindow(QMainWindow):
         self.motion_status_repeat_count[track_id] = repeat_count
         return repeat_count <= 3
 
-    def reset_motion_display_state(self) -> None:
+    def reset_motion_display_state(self) -> None:    #重置右侧数据显示框的运动状态去重记录
         self.last_motion_status_by_track.clear()
         self.motion_status_repeat_count.clear()
         self.saved_critical_alarm_keys.clear()
         self.critical_alarm_absent_frames.clear()
 
-    def should_save_alarm_file(self, track_id: int, alarm_type: str, level: str) -> bool:
+    def should_save_alarm_file(self, track_id: int, alarm_type: str, level: str) -> bool:    #判断某次报警是否需要保存截图和视频片段
         if alarm_type not in SAVE_ALARM_TYPES:
             return False
 
@@ -782,7 +845,7 @@ class MainWindow(QMainWindow):
         self.critical_alarm_absent_frames[key] = 0
         return True
 
-    def update_critical_alarm_rearm(self, current_keys: set[tuple[int, str]]) -> None:
+    def update_critical_alarm_rearm(self, current_keys: set[tuple[int, str]]) -> None:    #当三级预警状态消失一定帧数后，重新允许下一次同类三级预警保存，防止长期误屏蔽
         for key in current_keys:
             self.critical_alarm_absent_frames[key] = 0
 
@@ -797,10 +860,10 @@ class MainWindow(QMainWindow):
             else:
                 self.critical_alarm_absent_frames[key] = absent_frames
 
-    def draw_track(self, frame, track, alarms: list[tuple[str, str]]) -> None:
+    def draw_track(self, frame, track, alarms: list[tuple[str, str]]) -> None:    #在视频帧上绘制人体框、人员 ID、报警名称和运动轨
         x1, y1, x2, y2 = track.bbox
         color = (0, 0, 255) if alarms else (0, 255, 0)
-        cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
+        cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)    #画检测框、ID、轨迹、报警文字
         cv2.circle(frame, track.center, 4, color, -1)
         label = f"ID {track.track_id}"
         if alarms:
@@ -810,7 +873,7 @@ class MainWindow(QMainWindow):
         for start, end in zip(track.history[-20:-1], track.history[-19:]):
             cv2.line(frame, start, end, (0, 255, 255), 2)
 
-    def draw_overlay(self, frame, track_count: int, alarms: list[str]) -> None:
+    def draw_overlay(self, frame, track_count: int, alarms: list[str]) -> None:    #在视频左上角绘制当前模式、FPS、人数、围栏点数和报警提示
         mode_text = self.current_mode
         for chinese, english in MODE_NAMES_EN.items():
             if mode_text.startswith(chinese):
@@ -833,7 +896,7 @@ class MainWindow(QMainWindow):
             cv2.putText(frame, text, (12, y), cv2.FONT_HERSHEY_SIMPLEX, 0.72, color, 3)
             cv2.putText(frame, text, (12, y), cv2.FONT_HERSHEY_SIMPLEX, 0.72, (20, 20, 20), 1)
 
-    def to_english_alarm_text(self, text: str) -> str:
+    def to_english_alarm_text(self, text: str) -> str:    #将中文报警文本转换成英文，用于 OpenCV 画面显示，避免中文乱码
         result = text
         for alarm_id, chinese_name in ALARM_NAMES.items():
             result = result.replace(chinese_name, ALARM_NAMES_EN[alarm_id])
@@ -842,7 +905,7 @@ class MainWindow(QMainWindow):
         result = result.replace("（", " (").replace("）", ")").replace("：", ": ")
         return result
 
-    def finish_current_video(self) -> None:
+    def finish_current_video(self) -> None:    #识别结束后停止识别，保存未完成的报警片段，并提示用户可重新播放或退出识别
         self.clip_recorder.finish_all()
         self.stop_capture()
         self.video_label.show_message("识别完成，可再次点击播放重新识别")
@@ -854,7 +917,7 @@ class MainWindow(QMainWindow):
         self.return_button.setEnabled(True)
         self.playback_button.setEnabled(self.pending_video_source is not None)
 
-    def return_home(self) -> None:
+    def return_home(self) -> None:    #停止当前识别任务，清空状态，返回初始主页面
         self.stop_capture()
         self.current_mode = "idle"
         self.current_source = None
@@ -872,31 +935,45 @@ class MainWindow(QMainWindow):
         self.return_button.setEnabled(False)
         self.playback_button.setEnabled(False)
 
-    def stop_capture(self) -> None:
+    def stop_capture(self) -> None:    #停止定时器，释放摄像头或视频文件资源，并保存未完成的报警片段
         self.timer.stop()
         self.clip_recorder.finish_all()
         if self.capture is not None:
             self.capture.release()
             self.capture = None
 
-    def set_status(self, text: str) -> None:
+    def set_status(self, text: str) -> None:    #设置顶部状态标签文字，并根据预警等级切换颜色
         self.status_label.setText(text)
-        warning_style = WARNING_STATUS_STYLES.get(text)
-        if warning_style:
-            self.status_label.setStyleSheet(warning_style)
+        warning_levels = list(WARNING_STATUS_STYLES)
+        if text == "识别中":
+            self.status_label.setStyleSheet(
+                "color: #d9ffe8; background: #214433; border: 1px solid #4ec982;"
+            )
+        elif len(warning_levels) > 2 and text == warning_levels[2]:
+            self.status_label.setStyleSheet(
+                "color: #ffdada; background: #4a2525; border: 1px solid #ff6b6b;"
+            )
+        elif len(warning_levels) > 1 and text == warning_levels[1]:
+            self.status_label.setStyleSheet(
+                "color: #ffe5c8; background: #46321f; border: 1px solid #f2a65a;"
+            )
+        elif warning_levels and text == warning_levels[0]:
+            self.status_label.setStyleSheet(
+                "color: #fff6bd; background: #3f3822; border: 1px solid #e7d06a;"
+            )
         else:
             self.status_label.setStyleSheet(
-                "color: #0f6cbd; background: #eef6fc; border: 1px solid #cfe4f5;"
+                "color: #cce8ff; background: #173a52; border: 1px solid #2b8cc4;"
             )
 
-    def closeEvent(self, event) -> None:
+    def closeEvent(self, event) -> None:    #点击右上角关闭按钮时，释放摄像头和视频资源。
         self.stop_capture()
         event.accept()
 
 
 def main() -> int:
     app = QApplication(sys.argv)
-    app.setFont(QFont("Microsoft YaHei UI", 10))
+    app.setFont(QFont("SimSun", 10))
     window = MainWindow()
     window.show()
     return app.exec()

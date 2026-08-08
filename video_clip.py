@@ -10,20 +10,20 @@ import cv2
 
 
 @dataclass
-class ActiveClip:
+class ActiveClip:    #保存一个正在录制的报警视频片段，包括路径、剩余帧数和已缓存帧
     path: Path
     frames_left: int
     frames: list = field(default_factory=list)
 
 
-class AlarmClipRecorder:
+class AlarmClipRecorder:    #报警视频片段录制器，负责缓存报警前画面、收集报警后画面，并后台写入 mp4 文件
     def __init__(
         self,
         output_dir: str = "records/videos",
-        pre_seconds: float = 3.0,
-        post_seconds: float = 5.0,
-        max_fps: float = 20.0,
-        max_active_clips: int = 3,
+        pre_seconds: float = 3.0,    #事件前3秒
+        post_seconds: float = 5.0,    #后5秒
+        max_fps: float = 20.0,    #回放上限20帧
+        max_active_clips: int = 3,    #同时最多进行3个保存任务
     ):
         self.output_dir = Path(output_dir)
         self.pre_seconds = pre_seconds
@@ -41,7 +41,7 @@ class AlarmClipRecorder:
         self.error_lock = Lock()
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
-    def reset(self, fps: float | None = None, frame_size: tuple[int, int] | None = None) -> None:
+    def reset(self, fps: float | None = None, frame_size: tuple[int, int] | None = None) -> None:    #开始新视频或新摄像头识别时，重置缓存、帧率和正在录制的片段
         self.finish_all()
         source_fps = fps if fps and fps > 1 else self.max_fps
         self.frame_sample_step = max(1, ceil(source_fps / self.max_fps))
@@ -51,7 +51,7 @@ class AlarmClipRecorder:
         self.pre_buffer.clear()
         self.active_clips.clear()
 
-    def add_frame(self, frame) -> None:
+    def add_frame(self, frame) -> None:    #将当前识别画面加入报警前缓存，并写入正在录制的报警片段
         if frame is None:
             return
 
@@ -79,7 +79,7 @@ class AlarmClipRecorder:
                 remaining_clips.append(clip)
         self.active_clips = remaining_clips
 
-    def start_clip(self, alarm_type: str, track_id: int) -> str:
+    def start_clip(self, alarm_type: str, track_id: int) -> str:    #报警发生时创建一个新视频片段任务，保存报警前缓存帧并准备继续收集报警后帧
         if len(self.active_clips) >= self.max_active_clips:
             self._add_error(f"报警片段数量达到上限，已跳过保存：ID {track_id} {alarm_type}")
             return ""
@@ -97,31 +97,31 @@ class AlarmClipRecorder:
         self.active_clips.append(clip)
         return str(path)
 
-    def finish_all(self) -> None:
+    def finish_all(self) -> None:    #结束识别时，将所有未完成的视频片段写入文件
         for clip in self.active_clips:
             self._write_clip(clip)
         self.active_clips.clear()
 
-    def _write_clip(self, clip: ActiveClip) -> None:
+    def _write_clip(self, clip: ActiveClip) -> None:    #将视频写入任务提交给后台线程，避免阻塞 PyQt6 主界面，防卡顿
         frames = [frame.copy() for frame in clip.frames]
         path = clip.path
         fps = self.fps
         self.executor.submit(self._write_clip_sync, path, frames, fps)
 
-    def _write_clip_sync(self, path: Path, frames: list, fps: float) -> None:
+    def _write_clip_sync(self, path: Path, frames: list, fps: float) -> None:    #后台线程执行的视频写入入口，负责异常捕获
         try:
             self._write_clip_file(path, frames, fps)
         except Exception as exc:
             self._add_error(f"报警视频片段保存失败：{path}，原因：{exc}")
 
-    def _write_clip_file(self, path: Path, frames: list, fps: float) -> None:
+    def _write_clip_file(self, path: Path, frames: list, fps: float) -> None:    #使用 OpenCV VideoWriter 将帧列表保存为 mp4 视频片段
         if not frames:
             return
 
         first = frames[0]
         height, width = first.shape[:2]
         size = (width, height)
-        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+        fourcc = cv2.VideoWriter_fourcc(*"mp4v")    #报警视频保存
         writer = cv2.VideoWriter(str(path), fourcc, fps, size)
         if not writer.isOpened():
             self._add_error(f"报警视频片段保存失败：无法创建文件 {path}")
@@ -133,12 +133,12 @@ class AlarmClipRecorder:
             writer.write(frame)
         writer.release()
 
-    def collect_errors(self) -> list[str]:
+    def collect_errors(self) -> list[str]:    #返回并清空视频片段保存过程中的错误信息
         with self.error_lock:
             errors = self.errors[:]
             self.errors.clear()
         return errors
 
-    def _add_error(self, message: str) -> None:
+    def _add_error(self, message: str) -> None:    #记录后台保存视频时产生的错误信息，供 UI 定时读取并显示
         with self.error_lock:
             self.errors.append(message)

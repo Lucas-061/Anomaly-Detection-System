@@ -13,7 +13,7 @@ ALARM_NAMES = {
 SAVE_ALARM_TYPES = set(ALARM_NAMES)
 
 
-class AlarmManager:
+class AlarmManager:    #报警保存管理器，负责保存报警截图和写入 CSV 报警记录
     def __init__(self, output_dir: str = "records"):
         self.output_dir = Path(output_dir)
         self.screenshot_dir = self.output_dir / "screenshots"
@@ -23,7 +23,7 @@ class AlarmManager:
         self.screenshot_dir.mkdir(parents=True, exist_ok=True)
         self._ensure_log_header()
 
-    def trigger(
+    def trigger(    #当指定报警发生时，保存当前帧截图，并向 alarm_log.csv 写入报警记录
         self,
         frame,
         track_id: int,
@@ -41,7 +41,7 @@ class AlarmManager:
 
         screenshot = alarm_dir / f"{timestamp}_id{track_id}_{alarm_type}.jpg"
         try:
-            ok = cv2.imwrite(str(screenshot), frame)
+            ok = cv2.imwrite(str(screenshot), frame)    #报警截图保存
         except Exception as exc:
             self.errors.append(f"报警截图保存失败：{screenshot}，原因：{exc}")
             return None
@@ -68,12 +68,12 @@ class AlarmManager:
 
         return str(screenshot)
 
-    def collect_errors(self) -> list[str]:
+    def collect_errors(self) -> list[str]:    #返回并清空报警截图或 CSV 写入过程中产生的错误信息
         errors = self.errors[:]
         self.errors.clear()
         return errors
 
-    def _ensure_log_header(self) -> None:
+    def _ensure_log_header(self) -> None:    #确保报警日志 CSV 存在且表头为最新格式
         self.output_dir.mkdir(parents=True, exist_ok=True)
         header = ["time", "source", "track_id", "alarm_type", "alarm_name", "level", "screenshot", "video_clip"]
         if self.log_file.exists():

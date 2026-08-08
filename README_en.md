@@ -42,44 +42,16 @@ The system provides a PyQt6 graphical interface and supports both camera input a
 
 ![Intrusion and fence-crossing detection demo](./docs/images/show_intrusion.jpg)
 
+### Recognition System Interface
+
+![Recognition system interface](./docs/images/system_ui.jpg)
+
 ## 2. System Architecture
 
 The overall workflow is shown below:
 
 ```text
-+------------------+
-| Camera/Video Src |
-+--------+---------+
-         |
-         v
-+------------------+
-| OpenCV Capture   |
-+--------+---------+
-         |
-         v
-+------------------+
-| YOLO Detection   |
-+--------+---------+
-         |
-         v
-+------------------+
-| Tracking/Traj.   |
-+--------+---------+
-         |
-         v
-+------------------+
-| Virtual Fence    |
-+--------+---------+
-         |
-         v
-+------------------+
-| Behavior Rules   |
-+--------+---------+
-         |
-         v
-+------------------+
-| Alarm/Save/Log   |
-+------------------+
+Camera/Video Source -> OpenCV Video Capture -> YOLO Human Detection -> Target Tracking and Trajectory Analysis -> Virtual Fence Region Check -> Abnormal Behavior Rule Recognition -> Alarm Prompt/Screenshot/Record
 ```
 
 Core processing flow:

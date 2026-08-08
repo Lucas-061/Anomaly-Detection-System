@@ -5,13 +5,13 @@ import cv2
 
 
 @dataclass
-class Detection:
+class Detection:    #保存一次人体检测结果，包括人体框、置信度和类别标签
     bbox: tuple[int, int, int, int]
     confidence: float
     label: str = "person"
 
 
-class PersonDetector:
+class PersonDetector:    #人体检测器，优先使用 YOLOv8，加载失败时使用 OpenCV HOG 备用检测
     """Person detector with YOLO when available and OpenCV HOG as fallback."""
 
     def __init__(self, model_path: str = "models/yolov8n.pt", confidence: float = 0.45):
@@ -21,16 +21,16 @@ class PersonDetector:
         self.hog = None
 
         try:
-            from ultralytics import YOLO
+            from ultralytics import YOLO    #导入 YOLO
 
             model_file = self._resolve_model_path(model_path)
-            self.model = YOLO(str(model_file))
+            self.model = YOLO(str(model_file))    #加载模型
             self.backend = "yolo"
         except Exception:
             self.hog = cv2.HOGDescriptor()
             self.hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
 
-    def _resolve_model_path(self, model_path: str) -> Path | str:
+    def _resolve_model_path(self, model_path: str) -> Path | str:    #查找 YOLOv8 模型路径，优先使用 models/yolov8n.pt
         candidates = [
             Path(model_path),
             Path("yolov8n.pt"),
@@ -41,12 +41,12 @@ class PersonDetector:
                 return candidate
         return "yolov8n.pt"
 
-    def detect(self, frame) -> list[Detection]:
-        if self.backend == "yolo":
+    def detect(self, frame) -> list[Detection]:    #对输入视频帧进行人体检测，并返回检测到的人体列表
+        if self.backend == "yolo":    #检测入口
             return self._detect_yolo(frame)
         return self._detect_hog(frame)
 
-    def _detect_yolo(self, frame) -> list[Detection]:
+    def _detect_yolo(self, frame) -> list[Detection]:    #使用 YOLOv8 检测人体，只保留 person 类别，YOLOv8 实际检测函数
         detections: list[Detection] = []
         results = self.model.predict(frame, conf=self.confidence, verbose=False)
 
@@ -61,7 +61,7 @@ class PersonDetector:
 
         return detections
 
-    def _detect_hog(self, frame) -> list[Detection]:
+    def _detect_hog(self, frame) -> list[Detection]:    #当 YOLO 不可用时，使用 OpenCV HOG 进行备用人体检测，效果很差
         resized = cv2.resize(frame, (640, int(frame.shape[0] * 640 / frame.shape[1])))
         scale_x = frame.shape[1] / resized.shape[1]
         scale_y = frame.shape[0] / resized.shape[0]
